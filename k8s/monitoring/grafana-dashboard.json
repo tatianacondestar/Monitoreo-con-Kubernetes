@@ -1,0 +1,163 @@
+{
+  "__inputs": [],
+  "__requires": [],
+  "annotations": { "list": [] },
+  "description": "Dashboard del sistema Gym Microservices",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Estado de Servicios (UP/DOWN)",
+      "description": "1 = UP, 0 = DOWN para ambos microservicios",
+      "gridPos": { "h": 4, "w": 12, "x": 0, "y": 0 },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "horizontal",
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "options": { "0": { "color": "red", "text": "DOWN" }, "1": { "color": "green", "text": "UP" } }, "type": "value" }
+          ],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": 0 }, { "color": "green", "value": 1 }] }
+        }
+      },
+      "targets": [
+        {
+          "expr": "up{job=~\"gym-service|booking-service\"}",
+          "legendFormat": "{{job}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "Tasa de Requests — booking-service (req/min)",
+      "description": "Requests HTTP por minuto al booking-service en los últimos 5 minutos",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "fieldConfig": {
+        "defaults": { "unit": "reqpm", "color": { "mode": "palette-classic" } }
+      },
+      "targets": [
+        {
+          "expr": "rate(http_server_requests_seconds_count{job=\"booking-service\"}[5m]) * 60",
+          "legendFormat": "{{method}} {{uri}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "Latencia p95 — gym-service lookup",
+      "description": "Percentil 95 de latencia en búsquedas de membresía (incluye delay artificial)",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+      "fieldConfig": {
+        "defaults": { "unit": "s", "color": { "mode": "palette-classic" } }
+      },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, rate(gym_service_lookup_duration_seconds_bucket[5m]))",
+          "legendFormat": "p95 latencia gym-service",
+          "refId": "A"
+        },
+        {
+          "expr": "histogram_quantile(0.50, rate(gym_service_lookup_duration_seconds_bucket[5m]))",
+          "legendFormat": "p50 latencia gym-service",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "Reservas Creadas vs Rechazadas",
+      "description": "Panel de negocio: tasa de reservas exitosas vs rechazadas por minuto",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "fieldConfig": {
+        "defaults": { "unit": "short", "color": { "mode": "palette-classic" } }
+      },
+      "targets": [
+        {
+          "expr": "rate(booking_service_bookings_created_total[5m]) * 60",
+          "legendFormat": "Reservas creadas/min",
+          "refId": "A"
+        },
+        {
+          "expr": "rate(booking_service_bookings_rejected_total[5m]) * 60",
+          "legendFormat": "Reservas rechazadas/min",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "gauge",
+      "title": "Membresías Activas",
+      "description": "Número actual de membresías activas en gym-service",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 12 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{ "color": "red", "value": 0 }, { "color": "yellow", "value": 3 }, { "color": "green", "value": 5 }]
+          },
+          "min": 0,
+          "max": 20
+        }
+      },
+      "targets": [
+        {
+          "expr": "gym_service_active_memberships",
+          "legendFormat": "Membresías activas",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "Delay Artificial gym-service (Casuística 2)",
+      "description": "Muestra el delay artificial configurado en gym-service en tiempo real",
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 12 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{ "color": "green", "value": 0 }, { "color": "yellow", "value": 1000 }, { "color": "red", "value": 3000 }]
+          },
+          "color": { "mode": "thresholds" }
+        }
+      },
+      "targets": [
+        {
+          "expr": "gym_service_artificial_delay_ms",
+          "legendFormat": "Delay artificial (ms)",
+          "refId": "A"
+        }
+      ]
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 38,
+  "tags": ["gym-app", "microservicios", "kubernetes"],
+  "templating": { "list": [] },
+  "time": { "from": "now-30m", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Gym Microservices — Dashboard",
+  "uid": "gym-microservices-v1",
+  "version": 1
+}

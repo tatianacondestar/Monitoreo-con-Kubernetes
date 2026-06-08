@@ -1,0 +1,69 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: gym-app-alerts
+  namespace: gym-app
+  labels:
+    release: prometheus           # requerido por el Prometheus Operator
+spec:
+  groups:
+    - name: gym-app.availability
+      rules:
+
+        # Alerta 1 — gym-service caído
+        - alert: GymServiceDown
+          expr: up{job="gym-service"} == 0
+          for: 1m
+          labels:
+            severity: critical
+          annotations:
+            summary: "gym-service está caído"
+            description: "El servicio de membresías (gym-service) no responde. Los usuarios no pueden validar membresías y las reservas fallarán."
+
+        # Alerta 2 — booking-service caído
+        - alert: BookingServiceDown
+          expr: up{job="booking-service"} == 0
+          for: 1m
+          labels:
+            severity: critical
+          annotations:
+            summary: "booking-service está caído"
+            description: "El servicio de reservas (booking-service) no responde. Los usuarios no pueden reservar clases."
+
+    - name: gym-app.business
+      rules:
+
+        # Alerta 3 — Alta tasa de reservas rechazadas (problema de negocio)
+        - alert: HighBookingRejectionRate
+          expr: |
+            rate(booking_service_bookings_rejected_total[5m]) > 0.1
+          for: 2m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Alta tasa de reservas rechazadas"
+            description: "Más de 6 reservas por minuto están siendo rechazadas. Puede indicar membresías expiradas masivamente o que gym-service está fallando."
+
+        # Alerta 4 — Errores de comunicación entre servicios
+        - alert: GymServiceCommunicationErrors
+          expr: |
+            rate(booking_service_gym_service_errors_total[5m]) > 0.05
+          for: 1m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Errores de comunicación con gym-service"
+            description: "booking-service está teniendo errores al contactar gym-service. Posible timeout o servicio degradado. Tasa actual: {{ $value | humanize }}/s"
+
+        # Alerta 5 — Latencia alta en gym-service (casuística 2)
+        - alert: GymServiceHighLatency
+          expr: |
+            histogram_quantile(0.95,
+              rate(gym_service_lookup_duration_seconds_bucket[5m])
+            ) > 2
+          for: 1m
+          labels:
+            severity: warning
+          annotations:
+            summary: "gym-service tiene latencia alta (p95 > 2s)"
+            description: "El percentil 95 de latencia en gym-service supera 2 segundos. El timeout del booking-service (3s) está en riesgo de activarse."

@@ -1,0 +1,30 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: booking-service
+
+# URL del gym-service (se sobreescribe con variable de entorno en K8s)
+gym:
+  service:
+    url: ${GYM_SERVICE_URL:http://gym-service:8080}
+    timeout-seconds: ${GYM_SERVICE_TIMEOUT:3}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+      base-path: /
+      path-mapping:
+        prometheus: metrics
+  endpoint:
+    health:
+      show-details: always
+    prometheus:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true

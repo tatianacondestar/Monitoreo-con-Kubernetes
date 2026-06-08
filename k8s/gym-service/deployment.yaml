@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gym-service
+  namespace: gym-app
+  labels:
+    app: gym-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gym-service
+  template:
+    metadata:
+      labels:
+        app: gym-service
+    spec:
+      containers:
+        - name: gym-service
+          image: gym-service:1.0.0
+          imagePullPolicy: Never          # imagen local de Minikube
+          ports:
+            - containerPort: 8080
+              name: http
+          env:
+            - name: SPRING_APPLICATION_NAME
+              value: "gym-service"
+            - name: ARTIFICIAL_DELAY_MS
+              value: "0"
+          # Liveness probe — reinicia el pod si la app se cuelga
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 3
+          # Readiness probe — saca el pod del LB si no está listo
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 5
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"

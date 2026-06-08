@@ -1,0 +1,29 @@
+# Configuración personalizada del chart kube-prometheus-stack
+# Instalar con:
+#   helm install prometheus prometheus-community/kube-prometheus-stack \
+#     --namespace monitoring --create-namespace \
+#     -f k8s/monitoring/prometheus-values.yaml
+
+grafana:
+  adminPassword: "GymApp2024!"      # contraseña propia de Grafana
+  service:
+    type: NodePort
+    nodePort: 32000
+
+prometheus:
+  service:
+    type: NodePort
+    nodePort: 32090
+  prometheusSpec:
+    # CRÍTICO: permite que Prometheus detecte ServiceMonitors de CUALQUIER namespace
+    serviceMonitorSelectorNilUsesHelmValues: false
+    serviceMonitorSelector: {}
+    serviceMonitorNamespaceSelector: {}
+    # Permite detectar PrometheusRules de cualquier namespace
+    ruleSelector: {}
+    ruleNamespaceSelector: {}
+
+alertmanager:
+  service:
+    type: NodePort
+    nodePort: 32093
