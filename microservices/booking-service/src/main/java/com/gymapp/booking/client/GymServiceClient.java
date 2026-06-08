@@ -57,8 +57,13 @@ public class GymServiceClient {
                 return false;
             }
 
-            Boolean active = (Boolean) result.get("active");
-            return Boolean.TRUE.equals(active);
+            Object activeObj = result.get("active");
+
+            if (activeObj instanceof Boolean active) {
+                return active;
+            }
+
+            return false;
 
         } catch (Exception ex) {
             log.error("Fallo al contactar gym-service: {}", ex.getMessage());
@@ -83,8 +88,12 @@ public class GymServiceClient {
                     })
                     .block();
 
-            if (result == null) return "UNKNOWN";
-            return result.getOrDefault("type", "UNKNOWN").toString();
+            if (result == null) {
+                return "UNKNOWN";
+            }
+
+            Object type = result.get("type");
+            return type != null ? type.toString() : "UNKNOWN";
 
         } catch (Exception ex) {
             log.error("Fallo al obtener tipo de membresía: {}", ex.getMessage());
