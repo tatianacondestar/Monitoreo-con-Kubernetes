@@ -34,8 +34,9 @@
       "targets": [
         {
           "expr": "up{job=~\"gym-service|booking-service\"}",
-          "legendFormat": "{{job}}",
-          "refId": "A"
+          "legendFormat": "{{job}} {{container}}",
+          "refId": "A",
+          "instant": true
         }
       ]
     },

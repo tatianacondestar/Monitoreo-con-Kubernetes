@@ -11,7 +11,7 @@ spec:
       app: gym-service            # coincide exactamente con el label del Service
   endpoints:
     - port: http                  # nombre del puerto en el Service
-      path: /metrics
+      path: /actuator/metrics
       interval: 15s
   namespaceSelector:
     matchNames:

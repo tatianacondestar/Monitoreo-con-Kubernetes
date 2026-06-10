@@ -11,7 +11,7 @@ import java.util.Map;
 public class HealthController {
 
     // Health check propio — rápido, sin dependencias externas
-    @GetMapping("/health")
+    @GetMapping("/healthz")
     public ResponseEntity<Map<String, Object>> health() {
         return ResponseEntity.ok(Map.of(
                 "status", "UP",

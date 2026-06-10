@@ -5,7 +5,6 @@ spring:
   application:
     name: booking-service
 
-# URL del gym-service (se sobreescribe con variable de entorno en K8s)
 gym:
   service:
     url: ${GYM_SERVICE_URL:http://gym-service:8080}
@@ -16,7 +15,7 @@ management:
     web:
       exposure:
         include: health,info,prometheus
-      base-path: /
+      base-path: /actuator
       path-mapping:
         prometheus: metrics
   endpoint:

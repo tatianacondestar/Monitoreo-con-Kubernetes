@@ -11,7 +11,7 @@ spec:
       app: booking-service
   endpoints:
     - port: http
-      path: /metrics
+      path: /actuator/metrics
       interval: 15s
   namespaceSelector:
     matchNames:
